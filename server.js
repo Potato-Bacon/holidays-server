@@ -20,7 +20,6 @@ mongoose.connection.once("open", () => {
   log("connected to mongoose...");
 });
 
-app.use(morgan("dev"));
 app.use(cors());
 
 app.get("/", (req, res) => {
