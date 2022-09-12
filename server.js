@@ -1,29 +1,48 @@
 require("dotenv").config();
-//*dependencies
+//* dependencies
+const log = require("debug")("holidays:server");
+const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
+const Country = require("./models/Country");
 
-//*configuration
-const port = process.env.PORT ?? 3100;
+//* configuration
+const PORT = process.env.PORT ?? 3000;
 const MONGO_URI = process.env.MONGO_URI ?? "mongodb://localhost:27017/holidays";
 const app = express();
 
 mongoose.connect(MONGO_URI);
 mongoose.connection.on("error", (err) =>
-  console.log(err.message + " is Mongod not running?")
+  log(err.message + " is Mongod not running?")
 );
 mongoose.connection.on("disconnected", () => log("mongo disconnected"));
 mongoose.connection.once("open", () => {
-  console.log("connected to mongoose...");
+  log("connected to mongoose...");
 });
 
+app.use(morgan("dev"));
 app.use(cors());
 
 app.get("/", (req, res) => {
-  res.send({ msg: "Holidays" });
+  res.json({ msg: "Holidays" });
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+app.get("/countries/seed", async (req, res) => {
+  const countries = [
+    { title: "Singapore" },
+    { title: "Italy" },
+    { title: "Thailand" },
+  ];
+
+  await Country.deleteMany({});
+
+  const result = await Country.insertMany(countries);
+
+  res.json(result);
+});
+
+app.get("/countries", async (req, res) => {});
+
+app.listen(PORT, "0.0.0.0", () => {
+  log(`Express listing on ${PORT}`);
 });
